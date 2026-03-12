@@ -1,0 +1,10 @@
+# LF4apps.py — dépendances Python
+# Installer avec : pip install -r requirements.txt
+
+# Résolution DNS (dangling check)
+dnspython>=2.4.0
+
+# Outils externes requis (non-pip, à installer séparément) :
+#   adidnsdump  → pip install adidnsdump
+#   httpx       → https://github.com/projectdiscovery/httpx/releases
+#   gowitness   → https://github.com/sensepost/gowitness/releases
