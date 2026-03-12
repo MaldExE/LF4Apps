@@ -1,5 +1,3 @@
-# LF4Apps
-
 # LF4apps 🔍
 
 > **Active Directory DNS → Web Attack Surface Mapper**  
