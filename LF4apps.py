@@ -346,17 +346,29 @@ def run_httpx(url_list_file: str, httpx_out: str):
     ]
     cprint("info", f"Exécution httpx : {' '.join(shlex.quote(c) for c in cmd)}")
 
-    # httpx écrit les résultats dans -o, et affiche tout sur stdout/stderr
-    # On laisse passer stdout/stderr directement au terminal pour l'affichage temps réel
-    proc = subprocess.Popen(cmd, stdout=None, stderr=None, text=True)
+    # Capture stdout ligne par ligne (affichage temps réel) pour pallier le bug
+    # httpx v1.7.x avec -probe + -mc qui n'écrit pas toujours le fichier -o
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None, text=True, bufsize=1)
+    captured = []
     try:
-        rc = proc.wait()
+        for line in proc.stdout:
+            line = line.rstrip("\n")
+            print(line)
+            captured.append(line)
+        proc.stdout.close()
     except KeyboardInterrupt:
         proc.terminate()
         raise
+    rc = proc.wait()
+
+    # Fallback : si httpx n'a pas créé le fichier -o, on écrit le stdout capturé
+    # (extract_httpx_urls_ok filtre déjà les lignes [FAILED])
+    out_path = Path(httpx_out)
+    if not out_path.exists() and captured:
+        out_path.write_text("\n".join(captured) + "\n", encoding="utf-8")
 
     cprint("info", f"Code retour httpx : {rc}")
-    cprint("ok",   f"Sortie httpx → {Path(httpx_out).resolve()}")
+    cprint("ok",   f"Sortie httpx → {out_path.resolve()}")
     return rc
 
 
